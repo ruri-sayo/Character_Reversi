@@ -4,12 +4,56 @@
  */
 const CHARACTERS = [
     {
+        id: "shiina",
+        name: "椎奈",
+        description: "近所の謎の25歳のお姉さん。",
+        icon: "🐋",
+        logicType: "dynamic_turn",
+        depth: 3,
+        randomness: 1,
+        parameters: {
+            switchTurn: 20,
+            early: { mobility: 10, position: 100, discDiff: -30 },
+            late: { mobility: 2, position: 90, discDiff: 100 }
+        },
+        dialogues: {
+            start: ["ふふっ。今日は私に勝てるかなっ？", "今日は勝てるといいねっ", "キミも大きくなったねっ"],
+            thinking: ["うーん！面白いねっ", "強くなったねっ！", "面白い手を考えたねっ","ふむふむ"],
+            generic: ["いいねっ", "あはっ", "ふふっ","次はどこ置く～？","ふふふっ"],
+            corner: ["角もーらいっ", "キミも優しいねっ", "取れちゃったっ"],
+            advantage: ["今日も勝っちゃおっかなっ", "ふふっ。昔みたいでかーわいっ", "今日は私の勝ちかなっ！"],
+            disadvantage: ["もーーーっ", "今日の君は強いねっ", "んーー！！"],
+            win: ["ふふっ。今日は勝っちゃったっ", "楽しかったよっ！またやろうね！","次は勝てると良いねっ"],
+            lose: ["うーん...何が駄目だったんだろ...", "えーん...負けちゃった"]
+        }
+    },
+        {
+        id: "saki",
+        name: "佐紀",
+        description: "２歳年上の先輩",
+        icon: "🐾",
+        logicType: "static",
+        depth: 3,
+        randomness: 30,
+        parameters: {mobility: 2, position: 40, discDiff: 20 },
+        dialogues: {
+            start: ["今日は私に勝てるかな～？", "ふふっ", "佐紀ちゃんに挑むとは～"],
+            thinking: ["あははっ 面白いじゃん！", "強くなったじゃん！", "んーー","ふむふむ～","ナルホドねぇ"],
+            generic: ["ふふふっ", "面白いじゃん", "あははっ","そこでいいの～？"],
+            corner: ["角いただきー", "面白いじゃん", "佐紀ちゃんの勝利は近いなー？"],
+            advantage: ["今日も佐紀ちゃんの勝ちだな", "♪～ ♬～", "んーキミもまだまだだねぇ"],
+            disadvantage: ["んー。佐紀ちゃんでも難しいかな～？", "いつもより強いじゃん。", "ズルしてないよね？"],
+            win: ["あははっ", "また今度挑み給え～","今日も佐紀ちゃんの勝ちでした～"],
+            lose: ["...", "佐紀ちゃんを負かすとはいい度胸だねぇ","むーーー！"]
+        }
+    },
+    {
         id: "attacker",
         name: "猪突猛進のアキ",
         description: "とにかく石をたくさん取りたがります。後のことは考えていません。",
         icon: "🔥",
         logicType: "static",
-        depth: 3,
+        depth: 2,
         randomness: 0,
         parameters: { mobility: 5, position: 10, discDiff: 80 },
         dialogues: {
@@ -73,27 +117,7 @@ const CHARACTERS = [
         description: "基本は守備的ですが、たまに意味不明な手を打ちます。",
         icon: "🐈",
         logicType: "static",
-        depth: 3,
-        randomness: 3,
-        parameters: { mobility: 10, position: 50, discDiff: 10 },
-        dialogues: {
-            start: ["にゃーん。", "遊んでくれるの？", "眠いにゃ…"],
-            thinking: ["毛づくろい中…", "蝶々飛んでるにゃ…", "どれにするにゃ？"],
-            generic: ["にゃっ！", "ここ好き。", "えいっ。"],
-            corner: ["隅っこ落ち着くにゃ。", "ダンボール箱みたいにゃ。", "もらったにゃ。"],
-            advantage: ["調子いいにゃ！", "ごはんまだ？", "すごいにゃ？"],
-            disadvantage: ["むぅ…", "飽きてきたにゃ。", "爪研ぐぞ…"],
-            win: ["勝ったにゃ！おやつくれ！", "ボク最強にゃ。"],
-            lose: ["つまんないにゃ。", "ふんっ（顔を背ける）"]
-        }
-    },
-    {
-        id: "aaaaaa",
-        name: "気aaaaまぐれなネコ",
-        description: "基本は守備的ですが、たまに意味不明な手を打ちます。",
-        icon: "🐈",
-        logicType: "static",
-        depth: 3,
+        depth: 2,
         randomness: 3,
         parameters: { mobility: 10, position: 50, discDiff: 10 },
         dialogues: {
