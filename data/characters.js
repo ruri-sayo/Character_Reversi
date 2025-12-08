@@ -9,12 +9,12 @@ const CHARACTERS = [
         description: "近所の謎の25歳のお姉さん。",
         icon: "🐋",
         logicType: "dynamic_turn",
-        depth: 3,
+        depth: 5,
         randomness: 1,
         parameters: {
             switchTurn: 20,
             early: { mobility: 10, position: 100, discDiff: -30 },
-            late: { mobility: 2, position: 90, discDiff: 100 }
+            late: { mobility: 2, position: 50, discDiff: 100 }
         },
         dialogues: {
             start: ["ふふっ。今日は私に勝てるかなっ？", "今日は勝てるといいねっ", "キミも大きくなったねっ"],
@@ -27,14 +27,15 @@ const CHARACTERS = [
             lose: ["うーん...何が駄目だったんだろ...", "えーん...負けちゃった"]
         }
     },
-        {
+
+    {
         id: "saki",
         name: "佐紀",
         description: "２歳年上の先輩",
         icon: "🐾",
         logicType: "static",
-        depth: 3,
-        randomness: 30,
+        depth: 2,
+        randomness: 80,
         parameters: {mobility: 2, position: 40, discDiff: 20 },
         dialogues: {
             start: ["今日は私に勝てるかな～？", "ふふっ", "佐紀ちゃんに挑むとは～"],
