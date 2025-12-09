@@ -1,191 +1,32 @@
-@charset "UTF-8";
-
-/* =========================================
-   変数定義 (Color Palette & Settings)
-   ここを変えるだけで全体のテーマカラー変更が可能
-   ========================================= */
-:root {
-    --bg-color: #f4f7f6;           /* 背景色 */
-    --card-bg: #ffffff;            /* ゲームボード背景 */
-    --primary-color: #5c6bc0;      /* メインアクセントカラー */
-    --accent-color: #ff4081;       /* 強調色（勝利時など） */
-    --text-main: #333333;          /* 主な文字色 */
-    --text-sub: #666666;           /* 補足文字色 */
-    --border-radius: 12px;         /* 角丸の統一 */
-    --shadow-depth: 0 4px 6px rgba(0,0,0,0.1); /* 影 */
+body { font-family: 'Zen Maru Gothic', sans-serif; }
+.board-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    background-color: #1a202c;
+    border: 2px solid #1a202c;
 }
-
-/* =========================================
-   基本設定 (Reset & Base)
-   ========================================= */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
-
-/* =========================================
-   レイアウト (Container)
-   ========================================= */
-.game-container {
-    background-color: var(--card-bg);
-    width: 90%;
-    max-width: 600px; /* スマホで見やすく、PCで広がりすぎない幅 */
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-depth);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    transition: transform 0.3s ease;
-}
-
-/* =========================================
-   キャラクターエリア (Header)
-   ========================================= */
-.character-area {
-    display: flex;
-    align-items: center;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 15px;
-}
-
-.char-icon {
-    font-size: 3rem; /* アイコンサイズ */
-    margin-right: 15px;
-    background: #e8eaf6;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.char-info h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    color: var(--primary-color);
-}
-
-.char-desc {
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--text-sub);
-}
-
-/* =========================================
-   対話・ログエリア (Main Content)
-   ========================================= */
-.dialogue-area {
-    background-color: #fafafa;
-    border-radius: 8px;
-    padding: 15px;
-    height: 300px;
-    overflow-y: auto; /* スクロール対応 */
-    border: 1px solid #eee;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* 吹き出しスタイル */
-.message {
-    padding: 10px 14px;
-    border-radius: 16px;
-    max-width: 80%;
-    font-size: 0.95rem;
-    line-height: 1.4;
-    animation: fadeIn 0.3s ease-out forwards; /* 登場アニメーション */
-    opacity: 0; /* animationで1にする */
-}
-
-/* AI(佐紀)のメッセージ */
-.message.ai {
-    background-color: #e8eaf6;
-    align-self: flex-start;
-    border-top-left-radius: 2px;
-}
-
-/* ユーザー(プレイヤー)のメッセージ */
-.message.player {
-    background-color: var(--primary-color);
-    color: #fff;
-    align-self: flex-end;
-    border-top-right-radius: 2px;
-}
-
-/* =========================================
-   操作エリア (Footer/Controls)
-   ========================================= */
-.control-area {
-    display: flex;
-    gap: 10px;
-}
-
-input[type="text"] {
-    flex-grow: 1;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: var(--border-radius);
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-input[type="text"]:focus {
-    border-color: var(--primary-color);
-}
-
-button {
-    padding: 10px 20px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: var(--border-radius);
+.cell {
+    background-color: #15803d;
+    aspect-ratio: 1 / 1;
     cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.2s, transform 0.1s;
 }
-
-button:hover {
-    background-color: #3f51b5;
+.disc {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
-
-button:active {
-    transform: scale(0.96);
+.disc-black { background-color: #111; transform: scale(0.9); }
+.disc-white { background-color: #fefefe; transform: scale(0.9); }
+.valid-move {
+    width: 30%;
+    height: 30%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
 }
-
-/* =========================================
-   アニメーション定義
-   ========================================= */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* =========================================
-   レスポンシブ (Mobile)
-   ========================================= */
-@media (max-width: 480px) {
-    .game-container {
-        width: 95%;
-        height: 95vh; /* スマホなら画面いっぱいに */
-        padding: 15px;
-    }
-    
-    .dialogue-area {
-        flex-grow: 1; /* 高さ可変 */
-    }
-}
+.bubble-enter-active, .bubble-leave-active { transition: all 0.3s ease; }
+.bubble-enter-from, .bubble-leave-to { opacity: 0; transform: translateY(10px); }
+@keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
+.thinking-anim { animation: pulse 1.5s infinite; }
