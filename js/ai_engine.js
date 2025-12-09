@@ -6,20 +6,20 @@
 class AIEngine {
     constructor() {
         this.POSITION_WEIGHTS = [
-            [120, -20, 20,  5,  5, 20, -20, 120],
+            [120, -20, 20, 5, 5, 20, -20, 120],
             [-20, -40, -5, -5, -5, -5, -40, -20],
-            [ 20,  -5, 15,  3,  3, 15,  -5,  20],
-            [  5,  -5,  3,  3,  3,  3,  -5,   5],
-            [  5,  -5,  3,  3,  3,  3,  -5,   5],
-            [ 20,  -5, 15,  3,  3, 15,  -5,  20],
+            [20, -5, 15, 3, 3, 15, -5, 20],
+            [5, -5, 3, 3, 3, 3, -5, 5],
+            [5, -5, 3, 3, 3, 3, -5, 5],
+            [20, -5, 15, 3, 3, 15, -5, 20],
             [-20, -40, -5, -5, -5, -5, -40, -20],
-            [120, -20, 20,  5,  5, 20, -20, 120]
+            [120, -20, 20, 5, 5, 20, -20, 120]
         ];
     }
 
     async computeMove(board, turn, config) {
         return new Promise((resolve) => {
-            const validMoves = this._getValidMoves(board, turn);
+            const validMoves = GameCore.getValidMoves(board, turn);
             if (validMoves.length === 0) { resolve(null); return; }
             if (validMoves.length === 1) { resolve(validMoves[0]); return; }
 
@@ -28,7 +28,7 @@ class AIEngine {
             const currentTurn = totalDiscs - 4 + 1; // 初期4枚引いて、1手目からカウント
 
             const scoredMoves = validMoves.map(move => {
-                const nextBoard = this._simulateMove(board, move.r, move.c, turn);
+                const nextBoard = GameCore.simulateMove(board, move.r, move.c, turn);
                 const score = this._minimax(
                     nextBoard, config.depth - 1, -Infinity, Infinity, false, turn, config, currentTurn
                 );
@@ -43,11 +43,13 @@ class AIEngine {
             // config.randomness = 3 なら上位3手からランダム
             let topN = config.randomness || 0;
             if (topN >= scoredMoves.length) topN = scoredMoves.length - 1;
-            
-            // ログ出力（デバッグ用: どんな手を選んだかコンソールで見れます）
-            console.log(`AI Candidates (Top ${topN+1}):`, scoredMoves.slice(0, topN+1));
 
             const selectedIndex = Math.floor(Math.random() * (topN + 1));
+
+            // v1.4 Debug Log
+            console.log(`Turn: ${currentTurn} | Selected: Top ${selectedIndex + 1} (of ${topN + 1})`);
+            console.log('Top Moves:', scoredMoves.slice(0, topN + 1));
+
             resolve(scoredMoves[selectedIndex]);
         });
     }
@@ -58,10 +60,10 @@ class AIEngine {
         }
 
         const turnOwner = isMaximizing ? aiTurn : -aiTurn;
-        const validMoves = this._getValidMoves(board, turnOwner);
+        const validMoves = GameCore.getValidMoves(board, turnOwner);
 
         if (validMoves.length === 0) {
-            const opponentMoves = this._getValidMoves(board, -turnOwner);
+            const opponentMoves = GameCore.getValidMoves(board, -turnOwner);
             if (opponentMoves.length === 0) {
                 return this._evaluate(board, aiTurn, config, currentTurn);
             }
@@ -71,7 +73,7 @@ class AIEngine {
         if (isMaximizing) {
             let maxEval = -Infinity;
             for (const move of validMoves) {
-                const nextBoard = this._simulateMove(board, move.r, move.c, turnOwner);
+                const nextBoard = GameCore.simulateMove(board, move.r, move.c, turnOwner);
                 const evalVal = this._minimax(nextBoard, depth - 1, alpha, beta, false, aiTurn, config, currentTurn + 1);
                 maxEval = Math.max(maxEval, evalVal);
                 alpha = Math.max(alpha, evalVal);
@@ -81,7 +83,7 @@ class AIEngine {
         } else {
             let minEval = Infinity;
             for (const move of validMoves) {
-                const nextBoard = this._simulateMove(board, move.r, move.c, turnOwner);
+                const nextBoard = GameCore.simulateMove(board, move.r, move.c, turnOwner);
                 const evalVal = this._minimax(nextBoard, depth - 1, alpha, beta, true, aiTurn, config, currentTurn + 1);
                 minEval = Math.min(minEval, evalVal);
                 beta = Math.min(beta, evalVal);
@@ -128,9 +130,9 @@ class AIEngine {
         }
 
         // Mobility（着手可能数）の計算
-        const myMoves = this._getValidMoves(board, aiTurn).length;
-        const opMoves = this._getValidMoves(board, -aiTurn).length;
-        
+        const myMoves = GameCore.getValidMoves(board, aiTurn).length;
+        const opMoves = GameCore.getValidMoves(board, -aiTurn).length;
+
         const mobilityScore = (myMoves - opMoves);
         const discDiff = (myDiscs - opDiscs);
 
@@ -141,45 +143,5 @@ class AIEngine {
         totalScore += (weights.discDiff * discDiff);
 
         return totalScore;
-    }
-
-    // --- 以下、Step2と同じヘルパー関数 ---
-    _simulateMove(originalBoard, r, c, turn) {
-        const newBoard = originalBoard.map(row => [...row]);
-        newBoard[r][c] = turn;
-        const directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-        for (const [dr, dc] of directions) {
-            let nr = r + dr, nc = c + dc, flipList = [];
-            while (nr>=0 && nr<8 && nc>=0 && nc<8 && newBoard[nr][nc] === -turn) {
-                flipList.push({r:nr, c:nc}); nr+=dr; nc+=dc;
-            }
-            if (flipList.length>0 && nr>=0 && nr<8 && nc>=0 && nc<8 && newBoard[nr][nc] === turn) {
-                for (const flip of flipList) newBoard[flip.r][flip.c] = turn;
-            }
-        }
-        return newBoard;
-    }
-
-    _getValidMoves(board, turn) {
-        const moves = [];
-        for(let r=0; r<8; r++) {
-            for(let c=0; c<8; c++) {
-                if(this._canPlace(board,r,c,turn)) moves.push({r,c});
-            }
-        }
-        return moves;
-    }
-
-    _canPlace(board, r, c, turn) {
-        if(board[r][c]!==0) return false;
-        const directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-        for (const [dr, dc] of directions) {
-            let nr=r+dr, nc=c+dc, hasOpponent=false;
-            while(nr>=0 && nr<8 && nc>=0 && nc<8 && board[nr][nc] === -turn) {
-                hasOpponent=true; nr+=dr; nc+=dc;
-            }
-            if(hasOpponent && nr>=0 && nr<8 && nc>=0 && nc<8 && board[nr][nc] === turn) return true;
-        }
-        return false;
     }
 }

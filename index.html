@@ -1,37 +1,44 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reversi: Character Duel v1.3</title>
+    <title>Reversi: Character Duel v1.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="bg-slate-100 text-slate-800 h-screen flex flex-col items-center justify-center relative">
 
     <div id="app" class="w-full max-w-md p-4 flex flex-col gap-4 relative z-10">
-        
+
         <div v-if="!gameStarted" class="fixed top-4 left-4 z-50">
-            <a href="https://ruri-sayo.github.io/f53cfe5b31cafa1ddb061d46c22a2d5ca41f302bc889dc325f0423744834dd2a_WP_CM_blog/" class="flex items-center gap-2 bg-white text-slate-600 px-4 py-2 rounded-full shadow hover:bg-slate-50 transition text-sm font-bold no-underline">
+            <a href="https://ruri-sayo.github.io/f53cfe5b31cafa1ddb061d46c22a2d5ca41f302bc889dc325f0423744834dd2a_WP_CM_blog/"
+                class="flex items-center gap-2 bg-white text-slate-600 px-4 py-2 rounded-full shadow hover:bg-slate-50 transition text-sm font-bold no-underline">
                 <span>🏰</span> 城上に戻る
             </a>
         </div>
-        
+
         <div v-if="gameStarted">
             <div class="flex justify-between items-center mb-4">
                 <h1 class="text-xl font-bold text-slate-700">VS {{ aiConfig.name }}</h1>
-                <button @click="backToSelect" class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-full hover:bg-red-200 transition font-bold">
+                <button @click="backToSelect"
+                    class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-full hover:bg-red-200 transition font-bold">
                     ホームに戻る
                 </button>
             </div>
 
-            <div class="bg-white p-4 rounded-xl shadow-lg flex items-start gap-4 min-h-[110px] border-l-4 border-blue-400 transition-all duration-300">
-                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-4xl relative shadow-inner shrink-0 overflow-hidden">
+            <div
+                class="bg-white p-4 rounded-xl shadow-lg flex items-start gap-4 min-h-[110px] border-l-4 border-blue-400 transition-all duration-300">
+                <div
+                    class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-4xl relative shadow-inner shrink-0 overflow-hidden">
                     <span v-if="isThinking" class="thinking-anim">💭</span>
                     <template v-else>
-                        <img v-if="aiConfig.icon.includes('.') || aiConfig.icon.includes('http')" :src="aiConfig.icon" class="w-full h-full object-cover">
+                        <img v-if="aiConfig.icon.includes('.') || aiConfig.icon.includes('http')" :src="aiConfig.icon"
+                            class="w-full h-full object-cover">
                         <span v-else>{{ aiConfig.icon }}</span>
                     </template>
                 </div>
@@ -40,55 +47,62 @@
                         <span>{{ aiConfig.name }}</span>
                         <span v-if="isThinking" class="text-blue-500 text-xs font-bold thinking-anim">THINKING...</span>
                     </div>
-                    
+
                     <transition name="bubble" mode="out-in">
-                        <div :key="message" class="mt-2 p-3 bg-blue-50 text-slate-700 rounded-lg text-sm relative font-medium leading-relaxed">
-                            <div class="absolute top-3 -left-2 w-0 h-0 border-t-8 border-t-transparent border-r-[10px] border-r-blue-50 border-b-8 border-b-transparent"></div>
+                        <div :key="message"
+                            class="mt-2 p-3 bg-blue-50 text-slate-700 rounded-lg text-sm relative font-medium leading-relaxed">
+                            <div
+                                class="absolute top-3 -left-2 w-0 h-0 border-t-8 border-t-transparent border-r-[10px] border-r-blue-50 border-b-8 border-b-transparent">
+                            </div>
                             {{ message }}
                         </div>
                     </transition>
                 </div>
             </div>
 
-            <div class="relative w-full shadow-2xl rounded overflow-hidden mb-4 border-4 border-slate-700" :class="{'opacity-90': isThinking}">
+            <div class="relative w-full shadow-2xl rounded overflow-hidden mb-4 border-4 border-slate-700"
+                :class="{'opacity-90': isThinking}">
                 <div class="board-grid">
                     <div v-for="(row, r) in board" :key="r" class="contents">
-                        <div v-for="(cell, c) in row" :key="c" 
-                             class="cell flex items-center justify-center relative"
-                             @click="onPlayerClick(r, c)">
+                        <div v-for="(cell, c) in row" :key="c" class="cell flex items-center justify-center relative"
+                            @click="onPlayerClick(r, c)">
                             <div v-if="cell === 1" class="disc disc-black"></div>
                             <div v-if="cell === -1" class="disc disc-white"></div>
-                            <div v-if="turn === playerColor && cell === 0 && isValidMove(r, c) && !isThinking" class="valid-move"></div>
+                            <div v-if="turn === playerColor && cell === 0 && isValidMove(r, c) && !isThinking"
+                                class="valid-move"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-lg">
-                <div class="flex flex-col items-center w-1/3 transition-all duration-300" 
-                     :class="{'opacity-100 scale-110': turn === 1, 'opacity-50': turn !== 1}">
+                <div class="flex flex-col items-center w-1/3 transition-all duration-300"
+                    :class="{'opacity-100 scale-110': turn === 1, 'opacity-50': turn !== 1}">
                     <span class="text-xs text-slate-500 font-bold mb-1">
-                        <span v-if="playerColor === 1">YOU</span><span v-else>AI</span> (黒)
+                        <span v-if="playerColor === 1">YOU</span><span v-else>{{ aiConfig ? aiConfig.name : 'AI'
+                            }}</span> (黒)
                     </span>
                     <span class="text-3xl font-bold">{{ counts.black }}</span>
                 </div>
-                
+
                 <div class="flex flex-col items-center justify-center w-1/3">
-                     <span v-if="gameEnded" class="text-red-500 font-bold text-lg animate-bounce">決着!</span>
-                     <span v-else class="text-slate-300 text-2xl font-bold">VS</span>
+                    <span v-if="gameEnded" class="text-red-500 font-bold text-lg animate-bounce">決着!</span>
+                    <span v-else class="text-slate-300 text-2xl font-bold">VS</span>
                 </div>
 
-                <div class="flex flex-col items-center w-1/3 transition-all duration-300" 
-                     :class="{'opacity-100 scale-110': turn === -1, 'opacity-50': turn !== -1}">
+                <div class="flex flex-col items-center w-1/3 transition-all duration-300"
+                    :class="{'opacity-100 scale-110': turn === -1, 'opacity-50': turn !== -1}">
                     <span class="text-xs text-slate-500 font-bold mb-1">
-                        <span v-if="playerColor === -1">YOU</span><span v-else>AI</span> (白)
+                        <span v-if="playerColor === -1">YOU</span><span v-else>{{ aiConfig ? aiConfig.name : 'AI'
+                            }}</span> (白)
                     </span>
                     <span class="text-3xl font-bold">{{ counts.white }}</span>
                 </div>
             </div>
-            
+
             <div v-if="gameEnded" class="mt-6 text-center">
-                <button @click="resetGame" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition transform">
+                <button @click="resetGame"
+                    class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition transform">
                     もう一回遊ぶ
                 </button>
             </div>
@@ -96,15 +110,15 @@
 
         <div v-else class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md mx-auto my-auto mt-12">
             <h2 class="text-2xl font-bold text-center mb-4 text-slate-700">対戦相手を選んでね</h2>
-            
+
             <div class="flex justify-center mb-6">
                 <div class="bg-slate-100 p-1 rounded-lg flex shadow-inner w-full max-w-[280px]">
-                    <button @click="playerColor = 1" 
+                    <button @click="playerColor = 1"
                         class="flex-1 py-2 px-4 rounded-md text-sm font-bold transition-all duration-200"
                         :class="playerColor === 1 ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'">
                         先行 (黒)
                     </button>
-                    <button @click="playerColor = -1" 
+                    <button @click="playerColor = -1"
                         class="flex-1 py-2 px-4 rounded-md text-sm font-bold transition-all duration-200"
                         :class="playerColor === -1 ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'">
                         後攻 (白)
@@ -113,12 +127,13 @@
             </div>
 
             <div class="flex flex-col gap-3">
-                <button v-for="char in characters" :key="char.id" 
-                    @click="startGame(char)"
+                <button v-for="char in characters" :key="char.id" @click="startGame(char)"
                     class="flex items-center gap-4 p-4 rounded-xl border-2 border-slate-100 hover:border-blue-400 hover:bg-blue-50 transition text-left group">
-                    
-                    <div class="w-12 h-12 flex items-center justify-center text-4xl group-hover:scale-110 transition duration-300 overflow-hidden rounded-full bg-slate-50">
-                        <img v-if="char.icon.includes('.') || char.icon.includes('http')" :src="char.icon" class="w-full h-full object-cover">
+
+                    <div
+                        class="w-12 h-12 flex items-center justify-center text-4xl group-hover:scale-110 transition duration-300 overflow-hidden rounded-full bg-slate-50">
+                        <img v-if="char.icon.includes('.') || char.icon.includes('http')" :src="char.icon"
+                            class="w-full h-full object-cover">
                         <span v-else>{{ char.icon }}</span>
                     </div>
 
@@ -148,7 +163,7 @@
 
                 const game = new GameCore();
                 const ai = new AIEngine();
-                
+
                 const state = reactive({
                     gameStarted: false,
                     aiConfig: null,
@@ -178,7 +193,7 @@
                     state.gameEnded = status.isGameOver;
                     state.counts = { black: status.black, white: status.white };
                     state.validMoves = game.getValidMoves(state.turn);
-                    
+
                     if (state.gameEnded) {
                         // AI視点でのスコア差分を計算
                         // AIが白(-1)なら、(白-黒)。AIが黒(1)なら、(黒-白)。
@@ -218,19 +233,19 @@
 
                     // もしプレイヤーが後攻(白=-1)なら、最初のターン(黒=1)はAI
                     if (state.playerColor === -1 && state.turn === 1) {
-                        processAITurn();
+                        handleTurnFlow();
                     }
                 };
 
                 const processAITurn = async () => {
-                    if (state.gameEnded || state.turn === 1) return;
+                    if (state.gameEnded || state.turn === state.playerColor) return;
 
                     state.isThinking = true;
                     speak('thinking');
 
                     const waitPromise = delay(1200);
-                    const rawBoard = JSON.parse(JSON.stringify(state.board));
-                    
+                    const rawBoard = GameCore.cloneBoard(state.board);
+
                     // AIの色を決定
                     const aiColor = state.playerColor * -1;
                     const bestMovePromise = ai.computeMove(rawBoard, aiColor, state.aiConfig);
@@ -238,15 +253,15 @@
                     const [_, bestMove] = await Promise.all([waitPromise, bestMovePromise]);
 
                     if (bestMove) {
-                        game.makeMove(bestMove.r, bestMove.c, -1);
+                        game.makeMove(bestMove.r, bestMove.c, aiColor);
 
                         const isCorner = (bestMove.r === 0 || bestMove.r === 7) && (bestMove.c === 0 || bestMove.c === 7);
                         const status = game.checkGameState();
-                        
+
                         // AI視点の有利不利判定
                         let scoreDiff;
                         if (aiColor === -1) scoreDiff = status.white - status.black;
-                        else                scoreDiff = status.black - status.white;
+                        else scoreDiff = status.black - status.white;
 
                         if (isCorner) {
                             speak('corner');
@@ -254,8 +269,8 @@
                             if (Math.random() > 0.5) speak('advantage');
                             else speak('generic');
                         } else if (scoreDiff <= -10) {
-                             if (Math.random() > 0.5) speak('disadvantage');
-                             else speak('generic');
+                            if (Math.random() > 0.5) speak('disadvantage');
+                            else speak('generic');
                         } else {
                             speak('generic');
                         }
@@ -275,7 +290,7 @@
                         const validMoves = game.getValidMoves(currentTurn);
 
                         if (validMoves.length === 0) {
-                            state.message = currentTurn === 1
+                            state.message = currentTurn === state.playerColor
                                 ? "君はパスだね。"
                                 : "パスだ…（置ける場所がない）";
                             await delay(1000);
@@ -284,7 +299,7 @@
                             continue;
                         }
 
-                        if (currentTurn === -1) {
+                        if (currentTurn !== state.playerColor) {
                             await processAITurn();
                             continue;
                         }
@@ -299,9 +314,9 @@
                     if (state.gameEnded || state.isThinking || state.turn !== state.playerColor || state.isBusy) return;
                     state.isBusy = true;
                     try {
-    
-                    // プレイヤーの手を実行
-                    if (game.makeMove(r, c, state.playerColor)) {
+
+                        // プレイヤーの手を実行
+                        if (game.makeMove(r, c, state.playerColor)) {
                             game.switchTurn();
                             syncState();
                             await handleTurnFlow();
@@ -324,4 +339,5 @@
         }).mount('#app');
     </script>
 </body>
+
 </html>
