@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!--ファビコンの設定-->
-    <link rel="icon" href="othero.ico"
-    <title>Reversi: Character Duel v1.2</title>
+    <title>Reversi: Character Duel v1.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
@@ -93,15 +91,18 @@
                              @click="onPlayerClick(r, c)">
                             <div v-if="cell === 1" class="disc disc-black"></div>
                             <div v-if="cell === -1" class="disc disc-white"></div>
-                            <div v-if="turn === 1 && cell === 0 && isValidMove(r, c) && !isThinking" class="valid-move"></div>
+                            <div v-if="turn === playerColor && cell === 0 && isValidMove(r, c) && !isThinking" class="valid-move"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-lg">
-                <div class="flex flex-col items-center w-1/3" :class="{'opacity-100 scale-105': turn === 1, 'opacity-50': turn !== 1}">
-                    <span class="text-xs text-slate-500 font-bold mb-1">YOU (黒)</span>
+                <div class="flex flex-col items-center w-1/3 transition-all duration-300" 
+                     :class="{'opacity-100 scale-110': turn === 1, 'opacity-50': turn !== 1}">
+                    <span class="text-xs text-slate-500 font-bold mb-1">
+                        <span v-if="playerColor === 1">YOU</span><span v-else>AI</span> (黒)
+                    </span>
                     <span class="text-3xl font-bold">{{ counts.black }}</span>
                 </div>
                 
@@ -110,8 +111,11 @@
                      <span v-else class="text-slate-300 text-2xl font-bold">VS</span>
                 </div>
 
-                <div class="flex flex-col items-center w-1/3" :class="{'opacity-100 scale-105': turn === -1, 'opacity-50': turn !== -1}">
-                    <span class="text-xs text-slate-500 font-bold mb-1">AI (白)</span>
+                <div class="flex flex-col items-center w-1/3 transition-all duration-300" 
+                     :class="{'opacity-100 scale-110': turn === -1, 'opacity-50': turn !== -1}">
+                    <span class="text-xs text-slate-500 font-bold mb-1">
+                        <span v-if="playerColor === -1">YOU</span><span v-else>AI</span> (白)
+                    </span>
                     <span class="text-3xl font-bold">{{ counts.white }}</span>
                 </div>
             </div>
@@ -124,7 +128,23 @@
         </div>
 
         <div v-else class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md mx-auto my-auto mt-12">
-            <h2 class="text-2xl font-bold text-center mb-6 text-slate-700">対戦相手を選んでね</h2>
+            <h2 class="text-2xl font-bold text-center mb-4 text-slate-700">対戦相手を選んでね</h2>
+            
+            <div class="flex justify-center mb-6">
+                <div class="bg-slate-100 p-1 rounded-lg flex shadow-inner w-full max-w-[280px]">
+                    <button @click="playerColor = 1" 
+                        class="flex-1 py-2 px-4 rounded-md text-sm font-bold transition-all duration-200"
+                        :class="playerColor === 1 ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'">
+                        先行 (黒)
+                    </button>
+                    <button @click="playerColor = -1" 
+                        class="flex-1 py-2 px-4 rounded-md text-sm font-bold transition-all duration-200"
+                        :class="playerColor === -1 ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'">
+                        後攻 (白)
+                    </button>
+                </div>
+            </div>
+
             <div class="flex flex-col gap-3">
                 <button v-for="char in characters" :key="char.id" 
                     @click="startGame(char)"
@@ -166,7 +186,8 @@
                     gameStarted: false,
                     aiConfig: null,
                     board: [],
-                    turn: 1,
+                    turn: 1,      // 現在のターン (1:黒, -1:白)
+                    playerColor: 1, // プレイヤーの色 (1:黒=先行, -1:白=後攻)
                     gameEnded: false,
                     counts: { black: 0, white: 0 },
                     validMoves: [],
@@ -189,10 +210,19 @@
                     state.validMoves = game.getValidMoves(state.turn);
                     
                     if (state.gameEnded) {
-                        const diff = state.counts.white - state.counts.black;
-                        if (diff > 0) speak('win');
-                        else if (diff < 0) speak('lose');
-                        else state.message = "引き分けですね！";
+                        // AI視点でのスコア差分を計算
+                        // AIが白(-1)なら、(白-黒)。AIが黒(1)なら、(黒-白)。
+                        const aiColor = state.playerColor * -1;
+                        let diff;
+                        if (aiColor === -1) {
+                            diff = state.counts.white - state.counts.black;
+                        } else {
+                            diff = state.counts.black - state.counts.white;
+                        }
+
+                        if (diff > 0) speak('win'); // AI勝ち
+                        else if (diff < 0) speak('lose'); // AI負け
+                        else speak('draw'); // 引き分け (New!)
                     }
                 };
 
@@ -211,30 +241,43 @@
                 };
 
                 const resetGame = () => {
-                    game.reset();
+                    game.reset(); // 常に黒(1)からスタート
                     speak('start');
                     state.isThinking = false;
                     syncState();
+
+                    // もしプレイヤーが後攻(白=-1)なら、最初のターン(黒=1)はAI
+                    if (state.playerColor === -1 && state.turn === 1) {
+                        processAITurn();
+                    }
                 };
 
                 const processAITurn = async () => {
-                    if (state.gameEnded || state.turn === 1) return;
+                    // ゲーム終了 または プレイヤーのターンなら何もしない
+                    if (state.gameEnded || state.turn === state.playerColor) return;
                     
                     state.isThinking = true;
                     speak('thinking');
 
                     const waitPromise = new Promise(r => setTimeout(r, 1200));
                     const rawBoard = JSON.parse(JSON.stringify(state.board));
-                    const bestMovePromise = ai.computeMove(rawBoard, -1, state.aiConfig);
+                    
+                    // AIの色を決定
+                    const aiColor = state.playerColor * -1;
+                    const bestMovePromise = ai.computeMove(rawBoard, aiColor, state.aiConfig);
 
                     const [_, bestMove] = await Promise.all([waitPromise, bestMovePromise]);
 
                     if (bestMove) {
-                        game.makeMove(bestMove.r, bestMove.c, -1);
+                        game.makeMove(bestMove.r, bestMove.c, aiColor);
                         
                         const isCorner = (bestMove.r === 0 || bestMove.r === 7) && (bestMove.c === 0 || bestMove.c === 7);
                         const status = game.checkGameState();
-                        const scoreDiff = status.white - status.black;
+                        
+                        // AI視点の有利不利判定
+                        let scoreDiff;
+                        if (aiColor === -1) scoreDiff = status.white - status.black;
+                        else                scoreDiff = status.black - status.white;
 
                         if (isCorner) {
                             speak('corner');
@@ -248,26 +291,34 @@
                             speak('generic');
                         }
                     } else {
-                        state.message = "パスだ…（置ける場所がない）";
+                        speak('ai_pass'); // AI Pass (New!)
+                        await new Promise(r => setTimeout(r, 1000));
                     }
 
                     game.switchTurn();
                     syncState();
 
-                    const playerMoves = game.getValidMoves(1);
+                    // プレイヤーの手番チェック
+                    // プレイヤーの置ける場所がない場合
+                    const playerMoves = game.getValidMoves(state.playerColor);
                     if (!state.gameEnded && playerMoves.length === 0) {
-                        state.message = "君はパスだね。";
+                        // プレイヤーパス発生
+                        speak('player_pass'); // Player Pass (New!)
                         await new Promise(r => setTimeout(r, 1500));
-                        game.switchTurn();
+                        
+                        game.switchTurn(); // パスなのでAIに手番を戻す
                         syncState();
-                        processAITurn();
+                        processAITurn(); // 再帰的にAIターンへ
                     }
                     state.isThinking = false;
                 };
 
                 const onPlayerClick = (r, c) => {
-                    if (state.gameEnded || state.isThinking || state.turn !== 1) return;
-                    if (game.makeMove(r, c, 1)) {
+                    // 終了済み、思考中、もしくは自分のターンじゃない場合は無視
+                    if (state.gameEnded || state.isThinking || state.turn !== state.playerColor) return;
+
+                    // プレイヤーの手を実行
+                    if (game.makeMove(r, c, state.playerColor)) {
                         game.switchTurn();
                         syncState();
                         if (!state.gameEnded) processAITurn();
