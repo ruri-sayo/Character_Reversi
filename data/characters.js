@@ -9,7 +9,7 @@ const CHARACTERS = [
         description: "近所の謎の25歳のお姉さん。昔からの付き合い。",
         icon: "🐋",
         logicType: "dynamic_turn",
-        depth: 6,
+        depth: 4,
         randomness: 0,
         parameters: {
             switchTurn: 22,
