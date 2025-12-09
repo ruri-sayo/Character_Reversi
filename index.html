@@ -9,40 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Zen Maru Gothic', sans-serif; }
-        .board-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 2px;
-            background-color: #1a202c;
-            border: 2px solid #1a202c;
-        }
-        .cell {
-            background-color: #15803d;
-            aspect-ratio: 1 / 1;
-            cursor: pointer;
-        }
-        .disc {
-            width: 80%;
-            height: 80%;
-            border-radius: 50%;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
-        }
-        .disc-black { background-color: #111; transform: scale(0.9); }
-        .disc-white { background-color: #fefefe; transform: scale(0.9); }
-        .valid-move {
-            width: 30%;
-            height: 30%;
-            background-color: rgba(0,0,0,0.2);
-            border-radius: 50%;
-        }
-        .bubble-enter-active, .bubble-leave-active { transition: all 0.3s ease; }
-        .bubble-enter-from, .bubble-leave-to { opacity: 0; transform: translateY(10px); }
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
-        .thinking-anim { animation: pulse 1.5s infinite; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-slate-100 text-slate-800 h-screen flex flex-col items-center justify-center relative">
 
@@ -171,8 +138,11 @@
                     counts: { black: 0, white: 0 },
                     validMoves: [],
                     message: "",
-                    isThinking: false
+                    isThinking: false,
+                    isBusy: false
                 });
+
+                const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
                 const speak = (category) => {
                     if (!state.aiConfig || !state.aiConfig.dialogues[category]) return;
@@ -219,11 +189,11 @@
 
                 const processAITurn = async () => {
                     if (state.gameEnded || state.turn === 1) return;
-                    
+
                     state.isThinking = true;
                     speak('thinking');
 
-                    const waitPromise = new Promise(r => setTimeout(r, 1200));
+                    const waitPromise = delay(1200);
                     const rawBoard = JSON.parse(JSON.stringify(state.board));
                     const bestMovePromise = ai.computeMove(rawBoard, -1, state.aiConfig);
 
@@ -231,7 +201,7 @@
 
                     if (bestMove) {
                         game.makeMove(bestMove.r, bestMove.c, -1);
-                        
+
                         const isCorner = (bestMove.r === 0 || bestMove.r === 7) && (bestMove.c === 0 || bestMove.c === 7);
                         const status = game.checkGameState();
                         const scoreDiff = status.white - status.black;
@@ -253,24 +223,45 @@
 
                     game.switchTurn();
                     syncState();
-
-                    const playerMoves = game.getValidMoves(1);
-                    if (!state.gameEnded && playerMoves.length === 0) {
-                        state.message = "君はパスだね。";
-                        await new Promise(r => setTimeout(r, 1500));
-                        game.switchTurn();
-                        syncState();
-                        processAITurn();
-                    }
                     state.isThinking = false;
                 };
 
-                const onPlayerClick = (r, c) => {
-                    if (state.gameEnded || state.isThinking || state.turn !== 1) return;
-                    if (game.makeMove(r, c, 1)) {
-                        game.switchTurn();
-                        syncState();
-                        if (!state.gameEnded) processAITurn();
+                const handleTurnFlow = async () => {
+                    while (!state.gameEnded) {
+                        const currentTurn = game.turn;
+                        const validMoves = game.getValidMoves(currentTurn);
+
+                        if (validMoves.length === 0) {
+                            state.message = currentTurn === 1
+                                ? "君はパスだね。"
+                                : "パスだ…（置ける場所がない）";
+                            await delay(1000);
+                            game.switchTurn();
+                            syncState();
+                            continue;
+                        }
+
+                        if (currentTurn === -1) {
+                            await processAITurn();
+                            continue;
+                        }
+
+                        // プレイヤーの手番に戻ったら抜ける
+                        break;
+                    }
+                };
+
+                const onPlayerClick = async (r, c) => {
+                    if (state.gameEnded || state.isThinking || state.turn !== 1 || state.isBusy) return;
+                    state.isBusy = true;
+                    try {
+                        if (game.makeMove(r, c, 1)) {
+                            game.switchTurn();
+                            syncState();
+                            await handleTurnFlow();
+                        }
+                    } finally {
+                        state.isBusy = false;
                     }
                 };
 
