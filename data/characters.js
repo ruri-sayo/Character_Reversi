@@ -285,9 +285,9 @@ const CHARACTERS = [
         // 新フォーマット: ai オブジェクトで統合エンジン用パラメータを指定
         ai: {
             tier: "nightmare",
-            maxDepth: 12,
-            timeLimit: 2500,
-            endgameSolverDepth: 12,
+            maxDepth: 16,
+            timeLimit: 3000,
+            endgameSolverDepth: 16,
             randomness: 0,
             useMoveOrdering: true,
             weights: {
@@ -326,7 +326,10 @@ const CHARACTERS = [
             thinking: [
                 "……。",
                 "読めてるよ。全部。",
-                "ふふ……もう遅いんだけどなぁ。"
+                "ふふ……もう遅いんだけどなぁ。",
+                "ふふっ。面白い手だね。",
+                "……。",
+                "……。"
             ],
             generic: [
                 "……うん、そうくると思った。",
@@ -351,7 +354,8 @@ const CHARACTERS = [
             win: [
                 "……ふふ。また、遊ぼうね？",
                 "お疲れ様。……楽しかったよ、久しぶりに。",
-                "これが、本気の私。……どうだった？"
+                "これが、本気の私。……どうだった？",
+                "あははっ。私に勝てると思ったんだ。"
             ],
             lose: [
                 "……嘘。",
