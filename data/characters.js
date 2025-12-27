@@ -59,7 +59,7 @@ const CHARACTERS = [
         id: "isoroku",
         name: "磯禄",
         description: "相撲部出身の巨大な後輩。見た目は怖いが...",
-        icon: "🐗", 
+        icon: "🐗",
         logicType: "static",
         depth: 3,
         randomness: 10,
@@ -274,6 +274,105 @@ const CHARACTERS = [
             draw: ["にゃ？ わけっこ？", "おあいこにゃ。", "もう疲れたにゃー。"],
             player_pass: ["にゃ？ キミの番飛ばし？", "置けないの？ 下手っぴにゃ。", "休憩にゃ？"],
             ai_pass: ["にゃにゃ！？ 置くとこないにゃ！", "パスにゃ…。", "むぎゅ……狭いにゃ……。"]
+        }
+    },
+    // ========== ラスボス ==========
+    {
+        id: "shiina_nightmare",
+        name: "椎奈【nightmare】",
+        description: "本気の椎奈。一切の手加減なし。",
+        icon: "🐋",
+        // 新フォーマット: ai オブジェクトで統合エンジン用パラメータを指定
+        ai: {
+            tier: "nightmare",
+            maxDepth: 12,
+            timeLimit: 2500,
+            endgameSolverDepth: 12,
+            randomness: 0,
+            useMoveOrdering: true,
+            weights: {
+                opening: {
+                    mobility: 80,
+                    position: 40,
+                    discDiff: -20,
+                    stability: 20,
+                    corner: 150,
+                    frontier: 60
+                },
+                midgame: {
+                    mobility: 50,
+                    position: 30,
+                    discDiff: 0,
+                    stability: 50,
+                    corner: 120,
+                    frontier: 30
+                },
+                endgame: {
+                    mobility: 10,
+                    position: 10,
+                    discDiff: 200,
+                    stability: 100,
+                    corner: 80,
+                    frontier: 5
+                }
+            }
+        },
+        dialogues: {
+            start: [
+                "ふふ、今日は……手加減、なしでいくからね？",
+                "……本気、見せてあげる。",
+                "最初で最後の警告。……逃げるなら今だよ？"
+            ],
+            thinking: [
+                "……。",
+                "読めてるよ。全部。",
+                "ふふ……もう遅いんだけどなぁ。"
+            ],
+            generic: [
+                "……うん、そうくると思った。",
+                "ほら、次。",
+                "悪くないね。……でも、足りないかな。"
+            ],
+            corner: [
+                "頂き。",
+                "……ありがと。欲しかったんだ、ここ。",
+                "ふふ、これで詰みだよ？"
+            ],
+            advantage: [
+                "……見える？ キミの負けが。",
+                "もう手遅れ。布石は終わってるの。",
+                "ふふ……諦めて、くれないかな？"
+            ],
+            disadvantage: [
+                "……へぇ。",
+                "……やるじゃん。でも、まだ足りないよ？",
+                "……ちょっと、本気出しすぎじゃない？"
+            ],
+            win: [
+                "……ふふ。また、遊ぼうね？",
+                "お疲れ様。……楽しかったよ、久しぶりに。",
+                "これが、本気の私。……どうだった？"
+            ],
+            lose: [
+                "……嘘。",
+                "……キミ、何者？",
+                "……認める。今日は、キミの勝ち。……次は、ないけどね？"
+            ],
+            draw: [
+                "……引き分け、か。",
+                "ふふ、お互い本気だったね。",
+                "……次は、決着つけよ？"
+            ],
+            player_pass: [
+                "……動けないの？ じゃあ、私の番だね。",
+                "ふふ、詰んできてるね。",
+                "……もう少しだけ、付き合ってね？"
+            ],
+            ai_pass: [
+                "……あれ。私、置けないや。",
+                "……珍しいこともあるね。",
+                "……ふぅ。ちょっと休憩。"
+            ]
         }
     }
 ];
